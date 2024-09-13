@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input, select, button {
+            margin: 5px 0;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Team Tracker</h1>
+    
+    <div class="dashboard">
+        <div class="card">
+            <h2>Projects Overview</h2>
+            <p>Total Projects: <span id="totalProjects">0</span></p>
+            <p>Completed Projects: <span id="completedProjects">0</span></p>
+        </div>
+        <div class="card">
+            <h2>Task Completion</h2>
+            <p>Total Tasks: <span id="totalTasks">0</span></p>
+            <p>Completed Tasks: <span id="completedTasks">0</span></p>
+        </div>
+        <div class="card">
+            <h2>Client Relations</h2>
+            <p>Total Clients: <span id="totalClients">0</span></p>
+            <p>Avg Relationship Score: <span id="avgRelationshipScore">0</span></p>
+        </div>
+        <div class="card">
+            <h2>Call Metrics</h2>
+            <p>Scheduled Calls: <span id="scheduledCalls">0</span></p>
+            <p>Success Rate: <span id="successRate">0%</span></p>
+        </div>
+    </div>
+
+    <h2>Add New Project</h2>
+    <form id="projectForm">
+        <input type="text" id="projectName" placeholder="Project Name" required>
+        <input type="date" id="startDate" required>
+        <input type="date" id="endDate" required>
+        <select id="status" required>
+            <option value="">Select Status</option>
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+        </select>
+        <input type="text" id="assignedTo" placeholder="Assigned To" required>
+        <input type="number" id="timeSpent" placeholder="Time Spent (Hours)" required>
+        <input type="number" id="innovationScore" placeholder="Innovation Score (1-10)" min="1" max="10" required>
+        <button type="submit">Add Project</button>
+    </form>
+
+    <h2>Projects</h2>
+    <div id="projectList"></div>
+
+    <script>
+        let projects = [];
+
+        document.getElementById('projectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const project = {
+                name: document.getElementById('projectName').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                status: document.getElementById('status').value,
+                assignedTo: document.getElementById('assignedTo').value,
+                timeSpent: document.getElementById('timeSpent').value,
+                innovationScore: document.getElementById('innovationScore').value
+            };
+            projects.push(project);
+            updateDashboard();
+            displayProjects();
+            this.reset();
+        });
+
+        function updateDashboard() {
+            document.getElementById('totalProjects').textContent = projects.length;
+            document.getElementById('completedProjects').textContent = projects.filter(p => p.status === 'Completed').length;
+            // Add more dashboard updates here
+        }
+
+        function displayProjects() {
+            const projectList = document.getElementById('projectList');
+            projectList.innerHTML = '';
+            projects.forEach(project => {
+                const projectDiv = document.createElement('div');
+                projectDiv.innerHTML = `
+                    <h3>${project.name}</h3>
+                    <p>Status: ${project.status}</p>
+                    <p>Assigned To: ${project.assignedTo}</p>
+                    <p>Time Spent: ${project.timeSpent} hours</p>
+                    <p>Innovation Score: ${project.innovationScore}/10</p>
+                `;
+                projectList.appendChild(projectDiv);
+            });
+        }
+    </script>
+</body>
+</html>
