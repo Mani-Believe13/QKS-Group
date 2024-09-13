@@ -1,126 +1,123 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Tracker</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        h1, h2 {
-            color: #333;
-        }
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .card {
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 15px;
-            background-color: #f9f9f9;
-        }
-        form {
-            margin-bottom: 20px;
-        }
-        input, select, button {
-            margin: 5px 0;
-            padding: 5px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Team Tracker</h1>
-    
-    <div class="dashboard">
-        <div class="card">
-            <h2>Projects Overview</h2>
-            <p>Total Projects: <span id="totalProjects">0</span></p>
-            <p>Completed Projects: <span id="completedProjects">0</span></p>
+import React, { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Calendar, Clock, PhoneCall, User } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const generateRandomData = () => {
+  const teamMembers = ['Alice', 'Bob', 'Charlie', 'David', 'Eva'];
+  return teamMembers.map(member => ({
+    name: member,
+    scheduledCalls: Math.floor(Math.random() * 20) + 5,
+    completedCalls: Math.floor(Math.random() * 15) + 3,
+    successRate: Math.floor(Math.random() * 40) + 60,
+  }));
+};
+
+const Dashboard = () => {
+  const [data, setData] = useState(generateRandomData());
+  const [selectedMember, setSelectedMember] = useState('All');
+
+  useEffect(() => {
+    // In a real application, you would fetch data from an API here
+    const intervalId = setInterval(() => {
+      setData(generateRandomData());
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const totalScheduledCalls = data.reduce((sum, member) => sum + member.scheduledCalls, 0);
+  const totalCompletedCalls = data.reduce((sum, member) => sum + member.completedCalls, 0);
+  const averageSuccessRate = data.reduce((sum, member) => sum + member.successRate, 0) / data.length;
+
+  const filteredData = selectedMember === 'All' ? data : data.filter(member => member.name === selectedMember);
+
+  return (
+    <div className="p-4 bg-blue-50 min-h-screen">
+      <h1 className="text-3xl font-bold text-blue-800 mb-6">Call Schedule Dashboard</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Scheduled Calls</CardTitle>
+            <Calendar className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-800">{totalScheduledCalls}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Completed Calls</CardTitle>
+            <PhoneCall className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-700">{totalCompletedCalls}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Success Rate</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-700">{averageSuccessRate.toFixed(2)}%</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="bg-white p-4 rounded-lg shadow mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-blue-800">Team Performance</h2>
+          <Select onValueChange={setSelectedMember} defaultValue={selectedMember}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select team member" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Members</SelectItem>
+              {data.map(member => (
+                <SelectItem key={member.name} value={member.name}>{member.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <div class="card">
-            <h2>Task Completion</h2>
-            <p>Total Tasks: <span id="totalTasks">0</span></p>
-            <p>Completed Tasks: <span id="completedTasks">0</span></p>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={filteredData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="scheduledCalls" fill="#3b82f6" name="Scheduled Calls" />
+            <Bar dataKey="completedCalls" fill="#10b981" name="Completed Calls" />
+            <Bar dataKey="successRate" fill="#f59e0b" name="Success Rate %" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="bg-white p-4 rounded-lg shadow">
+        <h2 className="text-xl font-semibold text-blue-800 mb-4">Team Members</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {data.map(member => (
+            <Card key={member.name}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{member.name}</CardTitle>
+                <User className="h-4 w-4 text-blue-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-gray-600">Scheduled: {member.scheduledCalls}</div>
+                <div className="text-sm text-gray-600">Completed: {member.completedCalls}</div>
+                <div className="text-sm text-gray-600">Success Rate: {member.successRate}%</div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-        <div class="card">
-            <h2>Client Relations</h2>
-            <p>Total Clients: <span id="totalClients">0</span></p>
-            <p>Avg Relationship Score: <span id="avgRelationshipScore">0</span></p>
-        </div>
-        <div class="card">
-            <h2>Call Metrics</h2>
-            <p>Scheduled Calls: <span id="scheduledCalls">0</span></p>
-            <p>Success Rate: <span id="successRate">0%</span></p>
-        </div>
+      </div>
     </div>
+  );
+};
 
-    <h2>Add New Project</h2>
-    <form id="projectForm">
-        <input type="text" id="projectName" placeholder="Project Name" required>
-        <input type="date" id="startDate" required>
-        <input type="date" id="endDate" required>
-        <select id="status" required>
-            <option value="">Select Status</option>
-            <option value="Not Started">Not Started</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-        </select>
-        <input type="text" id="assignedTo" placeholder="Assigned To" required>
-        <input type="number" id="timeSpent" placeholder="Time Spent (Hours)" required>
-        <input type="number" id="innovationScore" placeholder="Innovation Score (1-10)" min="1" max="10" required>
-        <button type="submit">Add Project</button>
-    </form>
-
-    <h2>Projects</h2>
-    <div id="projectList"></div>
-
-    <script>
-        let projects = [];
-
-        document.getElementById('projectForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const project = {
-                name: document.getElementById('projectName').value,
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                status: document.getElementById('status').value,
-                assignedTo: document.getElementById('assignedTo').value,
-                timeSpent: document.getElementById('timeSpent').value,
-                innovationScore: document.getElementById('innovationScore').value
-            };
-            projects.push(project);
-            updateDashboard();
-            displayProjects();
-            this.reset();
-        });
-
-        function updateDashboard() {
-            document.getElementById('totalProjects').textContent = projects.length;
-            document.getElementById('completedProjects').textContent = projects.filter(p => p.status === 'Completed').length;
-            // Add more dashboard updates here
-        }
-
-        function displayProjects() {
-            const projectList = document.getElementById('projectList');
-            projectList.innerHTML = '';
-            projects.forEach(project => {
-                const projectDiv = document.createElement('div');
-                projectDiv.innerHTML = `
-                    <h3>${project.name}</h3>
-                    <p>Status: ${project.status}</p>
-                    <p>Assigned To: ${project.assignedTo}</p>
-                    <p>Time Spent: ${project.timeSpent} hours</p>
-                    <p>Innovation Score: ${project.innovationScore}/10</p>
-                `;
-                projectList.appendChild(projectDiv);
-            });
-        }
-    </script>
+export default Dashboard;
 </body>
 </html>
